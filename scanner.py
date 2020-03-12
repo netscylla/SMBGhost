@@ -3,6 +3,7 @@ import struct
 import sys
 import time
 import argparse
+import ipaddress
 from netaddr import IPNetwork
 import concurrent.futures
 try:
@@ -43,6 +44,17 @@ def error(m):
     if args.verbose:
         message("Error: {}".format(m))
 
+def check_cidr(c):
+    try:
+        if (ipaddress.IPv4Address(c[:-3]) in ipaddress.IPv4Network(c)):
+            return True
+        else:
+            print("something went wrong. exiting...")
+            exit(0)
+    except:
+        print("CIDR not properly formatted/detected.\n e.g. python3 ./scanner.py -r 192.168.1.0/24\nExiting...")
+        exit(0)
+
 def test_smbv3(ip):
 
     pkt = b'\x00\x00\x00\xc0\xfeSMB@\x00\x00\x00\x00\x00\x00\x00\x00\x00\x1f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00$\x00\x08\x00\x01\x00\x00\x00\x7f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00x\x00\x00\x00\x02\x00\x00\x00\x02\x02\x10\x02"\x02$\x02\x00\x03\x02\x03\x10\x03\x11\x03\x00\x00\x00\x00\x01\x00&\x00\x00\x00\x00\x00\x01\x00 \x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\n\x00\x00\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00'
@@ -82,6 +94,7 @@ if __name__ == "__main__":
     print("-----------------------------------------------------------")
     args = parse_args()
 
+    check_cidr(args.range)
 
     start = time.perf_counter()
     with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor, args.output as out_file:
@@ -96,7 +109,7 @@ if __name__ == "__main__":
                         )
                 ),
         ):
-            if result:
+            if result and args.output:
                 out_file.write(result + "\n")
                 out_file.flush()
     print("Done!  Total execution time: ", time.perf_counter() - start, " seconds")
