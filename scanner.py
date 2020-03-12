@@ -39,12 +39,9 @@ def verbose(m):
     if args.verbose:
         message(m)
 
-
 def error(m):
     if args.verbose:
         message("Error: {}".format(m))
-
-
 
 def test_smbv3(ip):
 
@@ -75,9 +72,7 @@ def test_smbv3(ip):
         error(str(ip)+":445 not open")
     except:
         sock.close()
-    
-		
-
+    		
 if __name__ == "__main__":
     print("-----------------------------------------------------------")
     print("|                   SMBGhost Scanner                       |")
